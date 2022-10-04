@@ -12,6 +12,7 @@ int gen;                // количество ходов
 bool avto_;             // режим работы игры
 int* x_empty = new int[size_empty]; // под список пустых клеток рядом с занятыми
 
+
 //std::vector<int> mas = {1, 2, 3, 4, 5};
 void menu_();
 void vvod(); // получение данных 
