@@ -1,5 +1,5 @@
 /*
-    Реализован пробная версия написания игры Жизнь с использованием "деревянного" метода
+    Реализована пробная версия написания игры Жизнь с использованием "деревянного" метода
     поиска живых клеток, путем последовательного пребора клеток всего поля. Игра заработалв, 
     но в дальнейшем такой расточительный подход (с учетом крупного поля) не допустим.
 */
@@ -17,8 +17,6 @@ int gen;                // количество ходов
 bool avto_;             // режим работы игры
 int* x_empty = new int[size_empty]; // под список пустых клеток рядом с занятыми
 
-
-//std::vector<int> mas = {1, 2, 3, 4, 5};
 void menu_();
 void vvod(); // получение данных 
 void vvod_size(); // ввод размера поля
@@ -35,15 +33,12 @@ int main(int argc, const char * argv[]) {
         print_();
    system ("pause ");
         start_game();
-    //    print_();
-   
     return 0;
 }
 
 void menu_() {
 char avto;
 cout << "Select mode:\n 1-Avto, else Hand mode \n "; 
-//while(!avto) 
 cin >> avto;
 if (avto == 49)
 {
@@ -61,7 +56,6 @@ void vvod_size() {
     cout << "Input size fill (1-60)\n" << " x  y  \n";
     cin >> x_size >> y_size;
        cout << "Field size: " << x_size * y_size << ";\n";
-
 }
 
 void vvod_figure() {
@@ -75,8 +69,6 @@ void vvod_figure() {
         if (x_fig_ <1 || x_fig_> x_size || y_fig_ <1 || y_fig_> y_size ) stop_ = true;
         x_figure[y_fig_-1] |= (1 << x_fig_-1);
     }
-   //  x_figure[y_fig_-1] |= (1 << x_fig_-3);
-  // cout << "xF+yF=" << x_fig_+y_fig_ << endl << "X_DEC=" << x_figure[y_fig_-1] << endl; 
 }
 
 int stroka(uint64_t st,  int size){
@@ -96,7 +88,6 @@ void print_() {
     int alive_=0;
     for(int i=0; i<y_size; i++){
         alive_ += stroka(x_figure[i], x_size) ;
-        
     }
     cout << "Gen: " << gen++ << ". Alive cells: " << alive_ << endl;
 }
@@ -108,20 +99,7 @@ int16_t sosedy(int16_t col, int16_t row) { //подсчет соседей
         for (int16_t c = col-(!(col==0)); c < col + 1 + (!(col+1 ==x_size)); c++) {
             if (((1 << c)  & x_figure_1[r])) {
                 number++;
-            }else{
-                // x_empty[empty_number] = c * 255 + r;
-                // empty_number++;
-                // if (empty_number>size_empty)
-                // {
-                //     /* code */
-                // }
-                // if (empty_number<10+size_empty)
-                // {
-                //     /* code */
-                // }
             }
-// cout << "X_" << c << " Y_" << r <<" || ";
-             //   x_figure[r] |= (1 << c);
         }
     }
     return number;
@@ -146,9 +124,6 @@ void start_game(){
         //  перебор строк
         for(int16_t i = 0; i < y_size; i++)
         {
- //           if(!x_figure_1[i]) continue;      // поиск непустой строки
- //           else 
- //           {
                 /* поиск занятой клетки */
                 for(int16_t ce_ = 0; ce_ < x_size; ce_++)
                 {
@@ -163,15 +138,12 @@ void start_game(){
                     {
                         /* проверка на жизнеспособность */
                         int16_t num_ = sosedy(ce_, i);
- //                       cout << i << "_row=" << ce_ << "_col=" << num_ << "num  ";
                         if ((num_ == 2) || (num_ ==3))
                         {
                             x_figure[i] |= (1 << ce_);
                         }
-                        
                     } 
                 } 
-//            }
         }
         // работа на окончание игры
         stop_end = true;
@@ -180,7 +152,6 @@ void start_game(){
          for (int i = 0; i < y_size; i++)
         {
             if (!(x_figure[i] == x_figure_1[i])) {stop_end = false;}
-//       cout << "end = " << stop_end << "_" << i; 
             stop_did += x_figure[i];
             if (!(x_figure[i] == x_figure_2[i])) {stop_repeat = false;}
         }
