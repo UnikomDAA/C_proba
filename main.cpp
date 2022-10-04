@@ -35,17 +35,16 @@ int main(int argc, const char * argv[]) {
 }
 
 void menu_() {
-int avto=0;
+char avto;
 cout << "Select mode:\n 1-Avto, else Hand mode \n "; 
 //while(!avto) 
-try
-    {cin >> avto;}
-    catch (const int e) {}
-if (avto = 1)
+cin >> avto;
+if (avto == 49)
 {
     avto_ = 1;
     cout << "Avto mode\n";
 } else {cout << "Hand mode\n";}
+Sleep(300);
 }
 
 void vvod() {
@@ -193,6 +192,6 @@ void start_game(){
         }
         if (avto_){ Sleep(500);}  
         else {system ("pause ");}
-           
-    }   
+    }
+       if (avto_){system ("pause ") ;}  
 }
