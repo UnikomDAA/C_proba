@@ -1,16 +1,22 @@
+/*
+    Измененная версия игры Жизнь.
+    Внимание! Будьте аккуратнее с вводом данных, так как защита от неправильного ввода не реализована.
+*/
 #include <iostream>
 #include "windows.h"
 using namespace std;
-int x_size =8;          // размер поля Х
-int y_size = 5;         // размер поля У
-int size_empty = 50;    // размер буфера хранения адресов пустых клеток
-int empty_number;       // подсчет пустых попутчиков занятых клеток
+int16_t x_size =8;          // размер поля Х
+int16_t y_size = 5;         // размер поля У
+int16_t size_figure = 10;    // размер буфера хранения адресов фигуры
+int16_t size_empty = 10;    // размер буфера хранения адресов пустых клеток
+uint16_t* figure = new uint16_t[size_figure]; // под список живых клеток 
+int16_t empty_number;       // подсчет пустых попутчиков занятых клеток
 uint64_t x_figure[60];  // матрица поля
 uint64_t x_figure_1[60]; // матрица предыдущего состояния поля
 int y_figure;
 int gen;                // количество ходов
 bool avto_;             // режим работы игры
-int* x_empty = new int[size_empty]; // под список пустых клеток рядом с занятыми
+uint16_t* empty_ = new uint16_t[size_empty]; // под список пустых клеток рядом с занятыми
 
 
 //std::vector<int> mas = {1, 2, 3, 4, 5};
@@ -18,10 +24,11 @@ void menu_();
 void vvod(); // получение данных 
 void vvod_size(); // ввод размера поля
 void vvod_figure(); // ввод элементов фигуры
+int16_t sorting(uint16_t* &position, int16_t &size);
 void start_game(); // запуск выполнения игры
 void print_();      // вывод данных на экран
 int stroka(uint64_t st, int size); // создание одной сторки для вывода данных
-
+void change_size_arr(uint16_t *&arr, int16_t &size, uint16_t &number);
 int main(int argc, const char * argv[]) {
     cout << "Hello!__\n";
     menu_();
@@ -60,23 +67,48 @@ void vvod_size() {
 }
 
 void vvod_figure() {
-    int x_fig_;
-    int y_fig_;
+    uint16_t x_fig_;
+    uint16_t y_fig_;
+    int16_t number;
     bool stop_;
     cout << "Input for figure X (1-" << x_size << ") and  Y (1-" << y_size << ")\n or any letter for stop\n"  << " x  y  \n";
     while (!stop_)
     {
         cin >> x_fig_ >> y_fig_;
         if (x_fig_ <1 || x_fig_> x_size || y_fig_ <1 || y_fig_> y_size ) stop_ = true;
-        x_figure[y_fig_-1] |= (1 << x_fig_-1);
+    /*    x_figure[y_fig_-1] |= (1 << x_fig_-1); */
+        figure[number] = y_fig_ * 0x10 + x_fig_;
+                number++;
+                if (number>size_figure)
+                {
+                    change_size_arr(figure, size_figure, number);
+                }
     }
-   //  x_figure[y_fig_-1] |= (1 << x_fig_-3);
-  // cout << "xF+yF=" << x_fig_+y_fig_ << endl << "X_DEC=" << x_figure[y_fig_-1] << endl; 
+    size_figure = sorting(figure, number);
 }
 
-int stroka(uint64_t st,  int size){
+int16_t sorting(uint16_t* &position, int16_t &size){
+    for(int16_t i = 1; i < size; i++)
+	{
+		int16_t j = i - 1;
+		while(j >= 0 && position[j] > position[j + 1])
+		{
+			if(position[j] == position[j + 1]){
+            swap(position[j+1], position[size-1]);
+            size--;
+            }
+            swap(position[j], position[j + 1]);
+			cout << "\ndid";
+			j--;
+		}
+	}
+    change_size_arr(position, size, 0);
+    return size;
+}
+/*
+int stroka(uint64_t st,  uint8_t size){
     int alive=0;
-    for(int i=0; i<size; i++){
+    for(uint8_t i=0; i<size; i++){
         if ((1 << i)  &  st) {
             cout << " *";
             alive++;
@@ -86,7 +118,7 @@ int stroka(uint64_t st,  int size){
      cout << endl;
      return alive;
 }
-
+*/
 void print_() {
     int alive_=0;
     for(int i=0; i<y_size; i++){
@@ -122,6 +154,71 @@ int16_t sosedy(int16_t col, int16_t row) { //подсчет соседей
     return number;
 cout << endl;    
 }
+void change_size_arr(uint16_t *&arr, int16_t &size, int  number)
+{
+    uint16_t *newArray = new uint16_t[size + 10];
+    for (int8_t i = 0; i < size; i++)
+    {
+        newArray[i] = arr[i];
+    }
+    size += number;
+    delete[] arr;
+    arr = newArray;
+}
+
+int16_t life_did(uint16_t* ceile, uint16_t size){
+    int8_t number;
+    int16_t sdvig;
+    for (int8_t i = 0; i < size; i++)
+    {
+    int16_t row = ceile[i] / 0x10;
+    int16_t col = ceile[i] % 0x10;
+//        while(i=size){
+    for (int16_t r = row - (!(row==0)); r < row + 1 + (!(row+1==y_size)); r++)
+    {
+        for (int16_t c = col-(!(col==0)); c < col + 1 + (!(col+1 ==x_size)); c++) {
+            int16_t sdvig = 0;
+            bool stop;
+            uint16_t row_col = r * 0x10 + c;
+            while(!stop ){ // поиск нужных клеток в списке
+                if (ceile[i] > row_col){     // выбор направления поиска
+                    if(ceile[i+sdvig] >= row_col || i+sdvig == size){
+                        stop = true;    
+                        if(ceile[i+sdvig] == row_col){
+                            number++;
+                        } else {
+                            empty_[empty_number] = ceile[i];
+                            empty_number++;
+                            if (empty_number>size_empty)
+                            {
+                                change_size_arr(empty_, size_empty, 10);
+                            }
+                        } 
+                    } else {
+                        sdvig++;    
+                    }
+                }else 
+                {   if(ceile[i-sdvig] <= row_col || i-sdvig == 0){
+                        stop = true;    
+                        if(ceile[i-sdvig] == row_col){
+                            number++;
+                        } else {
+                            empty_[empty_number] = ceile[i];
+                            empty_number++;
+                        } 
+                    } else {
+                        sdvig++;    
+                    }
+                    
+                }
+                
+            }
+        
+        }
+    }
+    }
+    return 0;
+}
 
  // запуск выполнения игры
 void start_game(){
@@ -138,17 +235,17 @@ void start_game(){
             empty_number = 0;
         } 
         
-        //  перебор строк
+/*        //  перебор строк
         for(int16_t i = 0; i < y_size; i++)
         {
  //           if(!x_figure_1[i]) continue;      // поиск непустой строки
  //           else 
  //           {
-                /* поиск занятой клетки */
+                // поиск занятой клетки 
                 for(int16_t ce_ = 0; ce_ < x_size; ce_++)
                 {
                     if (!((1 << ce_)  & x_figure_1[i])) {
-                        /* проверка на создание клетки */
+                        // проверка на создание клетки 
                         int16_t num_ = sosedy(ce_, i);
                         if (num_ ==  (2))
                         {
@@ -156,7 +253,7 @@ void start_game(){
                         }
                     } else
                     {
-                        /* проверка на жизнеспособность */
+                        // проверка на жизнеспособность 
                         int16_t num_ = sosedy(ce_, i);
  //                       cout << i << "_row=" << ce_ << "_col=" << num_ << "num  ";
                         if ((num_ == 2) || (num_ ==3))
@@ -168,7 +265,10 @@ void start_game(){
                 } 
 //            }
         }
-        // работа на окончание игры
+*/        
+        // проверка соседей у живых клеток
+        life_did(figure, size_figure);
+        // проверка окончания игры
         stop_end = true;
         stop_repeat = true;
         stop_did = 0;
