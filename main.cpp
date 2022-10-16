@@ -1,5 +1,8 @@
 /*
-    Измененная версия игры Жизнь.
+    Измененная версия игры Жизнь. Взамен проверки всего поля, проверке подлежат только живые клетки 
+    и пространство рядом с ними. Вывод на экран производится только в местах заменяемых символов, взмамен 
+    полной очистки с последующим выводом всего поля. Добавлен деморежим с ранее записанной фигурой, и 
+    режим повтора игры.
     Внимание! Будьте аккуратнее с вводом данных, так как защита от неправильного ввода не реализована.
 */
 #include <iostream>
@@ -11,14 +14,16 @@ int16_t size_figure = 10;    // размер буфера хранения ад�
 int16_t size_figure_1 = 10;    // размер буфера хранения адресов фигуры
 int16_t size_figure_2 = 10;    // размер буфера хранения адресов фигуры
 int16_t size_empty = 10;    // размер буфера хранения адресов пустых клеток
-uint16_t* figure = new uint16_t[size_figure]; // под список живых клеток 
-uint16_t* figure_1 = new uint16_t[size_figure_1]; // предыдущее состояние клеток 
-uint16_t* figure_2 = new uint16_t[size_figure_2]; // давнее состояние клеток
-uint16_t* empty_ = new uint16_t[size_empty]; // под список пустых клеток рядом с занятыми
-int16_t fig_numb = 0;
+uint16_t* figure     = new uint16_t[size_figure]; // под список живых клеток 
+uint16_t* figure_1   = new uint16_t[size_figure_1]; // предыдущее состояние клеток 
+uint16_t* figure_2   = new uint16_t[size_figure_2]; // давнее состояние клеток
+uint16_t* empty_     = new uint16_t[size_empty]; // под список пустых клеток рядом с занятыми
+int16_t fig_numb = 0;       // подсчет соседей
 int16_t empty_number;       // подсчет пустых попутчиков занятых клеток
 int gen;                // количество ходов
 bool avto_;             // режим работы игры
+bool demo_;             // демо-показ
+bool __on__ = true;     // разрешение на повтор игры
 
 void menu_();
 void vvod_size(); // ввод размера поля
@@ -30,7 +35,8 @@ void change_size_arr(uint16_t *&arr, int16_t &size, int16_t number);
 
 
 int main(int argc, const char * argv[]) {
-    cout << "Hello!__\n";
+    while (__on__)
+    {
     menu_();
     vvod_size();
     vvod_figure();
@@ -51,6 +57,14 @@ int main(int argc, const char * argv[]) {
     print_();
     system("pause ");
     start_game();
+        cout << "   May be play again?\nEnter '1' to repeat, '0' - to exit.";   //if (avto_){system ("pause ") ;}  
+        char newtry;
+        cin >>  newtry;
+        if (!(newtry == 49))
+        {__on__ = false;}
+        Sleep(300);
+    }
+    cout << "Good bye";
     delete [] figure;
     delete [] figure_1;
     delete [] figure_2;
@@ -65,13 +79,23 @@ if (avto == 49)
 {
     avto_ = 1;
     cout << "Avto mode\n";
-} else {cout << "Hand mode\n";}
+} else {cout << "Hand mode\n"; avto_ = 0;}
 Sleep(300);
+char demo;
+cout << "choose '1' for the game,\n otherwise demo \n "; 
+cin >> demo;
+if (demo == 49)
+{
+    demo_ = 0;    
+} else { demo_ = 1;}
 }
 
 void vvod_size() {
-    cout << "Input size fill (1-60)\n" << " x  y  \n";
-    cin >> x_size >> y_size;
+    if(demo_){
+        x_size = 15; y_size = 9;
+    }else{
+        cout << "Input size fill (1-100)\n" << " x  y  \n";
+        cin >> x_size >> y_size;}
     cout << "Field size: " << x_size * y_size << ";\n";
 }
 
@@ -80,31 +104,33 @@ void vvod_figure() {
     uint16_t y_fig_;
     int16_t number__ = 0;
     bool stop_ = 0;
-    cout << "Input for figure X (1-" << x_size << ") and  Y (1-" << y_size << ")\n or any letter for stop\n"  << " x  y  \n";
-    /*while (!stop_)
-    {
-        cin >> x_fig_ >> y_fig_;
-        if (x_fig_ <1 || x_fig_> x_size || y_fig_ <1 || y_fig_> y_size ) { // проверка соответствия
-            stop_ = true;
-            }
-        else { 
-            figure[number__] = y_fig_ * 0x100 + x_fig_;
-            number__++;
-            }*/
-        figure [0]= 0x504;
-        figure [1]= 0x505;
-        figure [2]= 0x506;
-        figure [3]= 0x405;
-        figure [4]= 0x709;
-                number__ = 5;
-                cout << "1number__="<<number__ << "  size_figure=" << size_figure << "f=" << "\n";    
-                if (number__>size_figure)
-                {
-                    change_size_arr(figure, size_figure, (int16_t)5);
+    if(demo_){
+        figure [0]= 0x507;
+        figure [1]= 0x508;
+        figure [2]= 0x509;
+        figure [3]= 0x408;
+                number__ = 4;
+    }else{
+    cout << "Input for the figure X (1-" << x_size << ") and  Y (1-" << y_size << ")\n or '0' to stop\n"  << " x  y  \n";
+    while (!stop_)
+        {
+            cin >> x_fig_; 
+            if(!x_fig_)break;
+            cin >> y_fig_;
+            if(!y_fig_)break;
+            if (x_fig_ <0 || x_fig_> x_size || y_fig_ <0 || y_fig_> y_size ) { // проверка соответствия
+                cout << "incorrect input. try again\n";
                 }
-//    }
- 
-    cout << "2number__="<<number__ << "  size_figure=" << size_figure << "\n";
+            else { 
+                figure[number__] = y_fig_ * 0x100 + x_fig_;
+                number__++;
+                }
+                    if (number__>size_figure-1)
+                    {
+                        change_size_arr(figure, size_figure, (int16_t)5);
+                    }
+        }
+    }
     size_figure = sorting(figure, number__);
     cout << "  size_figure=" << size_figure << "\n";
 }
@@ -118,10 +144,13 @@ int16_t sorting(uint16_t* &position, int16_t size){
 			if((position[j] == position[j + 1]) || (position[j + 1] == 0)){
             swap(position[j+1], position[size-1]);
             size--;
-            }
+            i=j;
+            break;
+            }else{
             swap(position[j], position[j + 1]);
-			cout << "\n";
+		//	cout << "\n";
 			j--;
+            }
 		}
 	}
     change_size_arr(position, size, (int16_t)0);
@@ -141,12 +170,8 @@ void print_() {
     }
    for(int i=0; i < size_figure; i++){
         x = (figure[i] % 0x100)*2; y = figure[i] / 0x100;
-        x1 = x/100 + '0';
-        x2 = (x%100/10) +'0'; 
-        x3 = x%10 +'0';
-        y1 = y/100 + '0'; 
-        y2 = y%100/10 +'0';
-        y3 = y%10 +'0';
+        x1 = x/100 + '0'; x2 = x%100/10 +'0'; x3 = x%10 +'0';
+        y1 = y/100 + '0'; y2 = y%100/10 +'0'; y3 = y%10 +'0';
         char w []= {033, '[', y1, y2, y3, ';', x1, x2, x3, 'H',  0};
         cout << w << "*";
     }    
@@ -174,66 +199,77 @@ void change_size_arr(uint16_t* &arr, int16_t &size, int16_t  number)
 void life_did(uint16_t* &ceile, uint16_t size, bool fig){
     int8_t number;
     empty_number = 0;
+    int16_t sdvig, row, col;
+    uint16_t row_col;
+    bool vector_find, stop;
     for (int8_t list = 0; list < size; list++)
     {
-        int16_t sdvig = 0;
-        int16_t row = ceile[list] / 0x100;
-        int16_t col = ceile[list] % 0x100;
-        bool vector_find = 0;
-        int8_t opros;
+        number = 0;
+        sdvig = 0;
+        row = ceile[list] / 0x100;
+        col = ceile[list] % 0x100;
+        vector_find = 0;
         /*  проверка соседних клеток    */
-        for (int16_t r = row - (!(row==0)); r < row + 1 + (!(row+1==y_size)); r++)
+        for (int16_t r = row - (!(row<=1)); r < row + 1 + (!(row >=y_size)); r++)
         {
-            for (int16_t c = col-(!(col==0)); c < col + 1 + (!(col+1 ==x_size)); c++) {
-                bool stop = false;
-                uint16_t row_col = r * 0x100 + c;
-                while(!vector_find){
-                    if((ceile[list+sdvig] < row_col)|| (list+sdvig == 0)) {
-                        vector_find = true;
-                        break;
-                    } else {--sdvig;}
-                }
-                while(!stop ){ // поиск нужных клеток в списке
-                    if((ceile[list+sdvig] >= row_col) || (list+sdvig == size)){
-                        stop = true;    
-                        if(ceile[list+sdvig] == row_col){   //при совпадении считаем
-                            number++;
-                        } else if(fig){
-                            if (empty_number>size_empty) // при нехватке места добавляем ячейки
-                            {
-                                change_size_arr(empty_, size_empty, (int16_t)10);
+            for (int16_t c = col - (!(col <= 1)); c < col + 1 + (!(col >= x_size)); c++)
+            {
+                stop = false;
+                row_col = r * 0x100 + c;
+                if (ceile[list] != row_col)
+                {
+                    while (!stop)
+                    { // поиск нужных клеток в списке
+                        if ((figure_1[sdvig] >= row_col) || (sdvig == size_figure_1))
+                        {
+                            stop = true;
+                            if (figure_1[sdvig] == row_col)
+                            { //при совпадении считаем
+                                number++;
                             }
-                            empty_[empty_number] = ceile[list]; // при отсутствии записываем пустую клетку
-                            empty_number++;
+                            else if (fig)
+                            {
+                                if (empty_number > size_empty - 1) // при нехватке места добавляем ячейки
+                                {
+                                    change_size_arr(empty_, size_empty, (int16_t)10);
+                                }
+                                empty_[empty_number] = row_col; // при отсутствии записываем пустую клетку
+                                empty_number++;
+                            }
                         }
-                    } else {
-                        sdvig++;    
+                        else
+                        {
+                            sdvig++;
+                        }
                     }
-                }        
+                }
             }
         }
         /*  работы по результатм "опроса соседей"   */
-        if (fig_numb>size_figure)
+        if (fig_numb>size_figure-1)
             {
                 change_size_arr(figure, size_figure, (int16_t)5);
             }
-        if((number == 3) || ((number == 2) && (fig))) figure[fig_numb] = ceile[list];
-        ++fig_numb;
+        if((number == 3) || ((number == 2) && (fig))) {
+            figure[fig_numb] = ceile[list];
+            ++fig_numb;
+        }
     }
 }
 
  // запуск выполнения игры
 void start_game(){
+    gen = 0;
     bool stop_end, stop_repeat, stop_did;
     while (!stop_end)
     {
         // запоминаем состояние и очищаем рабочее поле
-        figure_2 = figure_1;
-        size_figure_2 = size_figure_1;
-        figure_1 = figure;
-        size_figure_1 = size_figure;
-        figure = figure_2;
-        size_figure = size_figure_2;
+        swap(figure_2, figure_1);
+        swap(size_figure_2, size_figure_1);
+        swap(figure_1, figure);
+        swap(size_figure_1, size_figure);
+        // swap(figure, figure_2);
+        // swap(size_figure, size_figure_2);
         empty_number = 0;
 
         fig_numb = 0;
@@ -253,37 +289,36 @@ void start_game(){
         {
             for (int i = 0; i < size_figure; i++)
             {
-                if (!(figure[i] == figure_1[i]))
+                if (figure[i] != figure_1[i])
                 {
                     stop_end = false;
                 }
-                stop_did += figure[i];
+            //    stop_did += figure[i];
             }
-        }
+        }else{stop_end = false;}
         if (size_figure_2 == size_figure)
         {
             for (int i = 0; i < size_figure; i++)
             {
-                if (!(figure[i] == figure_2[i]))
+                if (figure[i] != figure_2[i])
                 {
                     stop_repeat = false;
                 }
             }
-        }
+        }else{stop_repeat = false;}
          print_();
         if (stop_end)
-            cout << "The world has stagnated. Game over." << endl;
+            cout << "The world has stagnated. Game over.             " << endl;
          
-        if (!stop_did) 
-        {   cout << "All cells is did. Game over." << endl;
+        if (!size_figure) 
+        {   cout << "All cells is did. Game over.                    " << endl;
             stop_end = true;
         }
         if (stop_repeat)
-        {   cout << "The world has cicled. Game over." << endl;
+        {   cout << "The world has cicled. Game over.                " << endl;
             stop_end = true;
         }
         if (avto_){ Sleep(500);}  
-        else {system ("pause ");}
+        
     }
-       if (avto_){system ("pause ") ;}  
 }
